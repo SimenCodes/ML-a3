@@ -25,17 +25,15 @@ def dense_layer_forward(X, W, bias, activation):
     :param W: Weights for this layer
     :param bias: Bias node for this layer
     :param activation: The activation function to use
-    :return: The activation vector, as well as a copy of the input values
+    :return: The activation vector, as well as a tuple of values
     """
-    z = np.dot(W, X) + bias
-    return activation(z), (X, W, bias)
+    Z = np.dot(W, X) + bias
+    return activation(Z)[0], (W, Z, bias)
 
 
-def cost(Y_pred, Y_expected):
-    """
-    Find out how wrong we were
-    :param Y_pred:
-    :param Y_expected:
-    :return: The Mean Squared Error
-    """
-    return 0.5 * ((Y_pred - Y_expected) ** 2)
+def dense_layer_backward(dL_next, dA, old_values, activation_backwards, learning_rate):
+    W, Z, bias = old_values
+    dZ = activation_backwards(dA, Z)
+    dL = np.dot(np.dot(dL_next, dZ.T), dA)  # Eq 2
+    W_new = W - learning_rate * dL  # Eq 4
+
