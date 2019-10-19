@@ -6,7 +6,7 @@ def initialize(layers, he_init=True):
     Initialize weights and biases for the neural network
     :param layers: List of ints, representing the number of nodes in each layer
     :param he_init: Whether to use He initialization, ref https://towardsdatascience.com/random-initialization-for-neural-networks-a-thing-of-the-past-bfcdd806bf9e
-    :return: A dict with W_i and b_i keys, for i in [1..number of layers]
+    :return: A dict with W_i and b_i keys, for i in [1 until number of layers]
     """
     params = {}
     for i in range(1, len(layers)):
@@ -28,12 +28,14 @@ def dense_layer_forward(X, W, bias, activation):
     :return: The activation vector, as well as a tuple of values
     """
     Z = np.dot(W, X) + bias
-    return activation(Z)[0], (W, Z, bias)
+    return activation(Z)[0], (X, W, Z, bias)
 
 
-def dense_layer_backward(dL_next, dA, old_values, activation_backwards, learning_rate):
-    W, Z, bias = old_values
-    dZ = activation_backwards(dA, Z)
-    dL = np.dot(np.dot(dL_next, dZ.T), dA)  # Eq 2
-    W_new = W - learning_rate * dL  # Eq 4
+def dense_layer_backward(dL_L, old_values, activation_backwards, learning_rate):
+    X, W, Z, bias = old_values
+    dL_z = activation_backwards(dL_L, Z)
+    dW = np.dot(dL_z, X.T) # / m
+    db = np.mean(dL_z)
+    dA = np.dot(W, dL_z)
+
 
