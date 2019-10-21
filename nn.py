@@ -4,6 +4,7 @@ import numpy as np
 def initialize(layers, he_init=True):
     """
     Initialize weights and biases for the neural network
+
     :param layers: List of ints, representing the number of nodes in each layer
     :param he_init: Whether to use He initialization, ref https://towardsdatascience.com/random-initialization-for-neural-networks-a-thing-of-the-past-bfcdd806bf9e
     :return: A dict with W_i and b_i keys, for i in [1 until number of layers]
@@ -21,6 +22,7 @@ def initialize(layers, he_init=True):
 def dense_layer_forward(X, W, bias, activation):
     """
     Perform forward pass through a simple dense layer
+
     :param X: Inputs to the layer
     :param W: Weights for this layer
     :param bias: Bias node for this layer
