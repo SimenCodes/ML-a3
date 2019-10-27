@@ -5,7 +5,13 @@ def cost(Y_pred, Y_expected):
     :param Y_expected:
     :return: The Mean Squared Error
     """
-    return 0.5 * ((Y_pred - Y_expected) ** 2)
+    return 0.5 * ((Y_expected - Y_pred) ** 2)
 
-def cost_grad():
-    pass
+
+def cost_grad(Y_pred, Y_expected):
+    """
+    :param Y_pred:
+    :param Y_expected:
+    :return: Gradient of our cost function wrt. Y_pred
+    """
+    return Y_expected - Y_pred
