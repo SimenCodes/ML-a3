@@ -1,6 +1,6 @@
 import unittest
 
-from nn import *
+from layer import *
 
 network = initialize([2, 3])
 assert network['W_1'].shape == (3, 2)
