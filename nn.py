@@ -1,9 +1,12 @@
 import numpy as np
+import cost
+import activation_functions
 
 
 class NeuralNetwork:
 
-    def __init__(self, layer_dimensions: [int], activations: list, he_initialization: bool):
+    def __init__(self, layer_dimensions: [int], activations: [activation_functions.ActivationFunction],
+                 he_initialization: bool, cost_function: cost.CostFunction = cost.CostFunction):
         """
         Initialize the neural network model. TODO more documentation about the model
 
@@ -15,6 +18,7 @@ class NeuralNetwork:
         self.layer_dimensions = layer_dimensions
         self.activations = activations
         self.he_initialization = he_initialization
+        self.cost_function = cost_function
 
         self.params = self.initialize()
         self.cost = []
@@ -52,11 +56,16 @@ class NeuralNetwork:
 
         for i in range(epochs):
             # Forward propagate
-            A, temp_ = self._forward_prop(X)
+            A, cache = self._forward_prop(X)
 
             # compute cost
+            _cost = self.cost_function.cost(A, Y)
 
             # backwards propagate gradient and update weights
+            gradients = self._backward_prop(A, Y, cache)
+
+            # Update parameters
+            # TODO Update parameters
 
             # TODO print cost
 
@@ -74,15 +83,33 @@ class NeuralNetwork:
         raise NotImplementedError
 
     def _forward_prop(self, X):
-        temp_ = []
+        cache = []
         A = X
         for i in range(1, len(self.layer_dimensions)):
             A_prev = A
             W = self.params['W_' + str(i)]
             b = self.params['b_' + str(i)]
-            A, cache = self._dense_layer_forward(A_prev, W, b, activation=self.activations[i - 1])
-            temp_.append(cache)
-        return A, temp_
+            A, cache = self._dense_layer_forward(A_prev, W, b, activation=self.activations[i - 1].forward)
+            cache.append(cache)
+        return A, cache
+
+    def _backward_prop(self, AL, Y, cache):
+        # store for future
+        gradients = {}
+
+        L = len(self.layer_dimensions)
+
+        # calculate grad for cost function
+        dAL = self.cost_function.cost_grad(AL, Y)
+
+        out = self._dense_layer_backward(dAL, cache[L-1], self.activations[L].backwards)
+        gradients["dW" + str(L)],  gradients["db" + str(L)], gradients["dA" + str(L)] = out
+
+        for l in reversed(range(L - 1)):
+            out = self._dense_layer_backward(gradients["dA" + str(l+2)], cache[l], self.activations[l].backwards)
+            gradients["dW" + str(l)],  gradients["db" + str(l)], gradients["dA" + str(l)] = out
+
+        return gradients
 
     @staticmethod
     def _dense_layer_forward(X, W, bias, activation):
@@ -97,3 +124,19 @@ class NeuralNetwork:
         """
         Z = np.dot(W, X) + bias
         return activation(Z)[0], (W, Z, bias)
+
+    @staticmethod
+    def _dense_layer_backward(g, old_values, activation_backwards):
+        """
+        Compute gradients for this layer
+        :param g: Gradients propagated from the next layer
+        :param old_values: the X, W, Z, and bias nodes
+        :param activation_backwards: the backwards implementation of the activation function
+        :return: weight and bias changes, and the gradients to propagate to the previous layer
+        """
+        X, W, Z, bias = old_values
+        g = activation_backwards(g, Z)
+        dW = np.dot(g, X.T)  # / m
+        dB = np.mean(g)
+        g *= W
+        return dW, dB, g
