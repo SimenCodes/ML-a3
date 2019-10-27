@@ -33,11 +33,17 @@ def dense_layer_forward(X, W, bias, activation):
     return activation(Z)[0], (X, W, Z, bias)
 
 
-def dense_layer_backward(dL_L, old_values, activation_backwards, learning_rate):
+def dense_layer_backward(g, old_values, activation_backwards):
+    """
+    Compute gradients for this layer
+    :param g: Gradients propagated from the next layer
+    :param old_values: the X, W, Z, and bias nodes
+    :param activation_backwards: the backwards implementation of the activation function
+    :return: weight and bias changes, and the gradients to propagate to the previous layer
+    """
     X, W, Z, bias = old_values
-    dL_z = activation_backwards(dL_L, Z)
-    dW = np.dot(dL_z, X.T) # / m
-    db = np.mean(dL_z)
-    dA = np.dot(W, dL_z)
-
-
+    g = activation_backwards(g, Z)
+    dW = np.dot(g, X.T) # / m
+    dB = np.mean(g)
+    g *= W
+    return dW, dB, g
