@@ -65,7 +65,7 @@ class NeuralNetwork:
             gradients = self._backward_prop(A, Y, cache)
 
             # Update parameters
-            # TODO Update parameters
+            self._update_params(gradients, learning_rate)
 
             # TODO print cost
 
@@ -89,27 +89,44 @@ class NeuralNetwork:
             A_prev = A
             W = self.params['W_' + str(i)]
             b = self.params['b_' + str(i)]
-            A, cache = self._dense_layer_forward(A_prev, W, b, activation=self.activations[i - 1].forward)
-            cache.append(cache)
+            A, tmp = self._dense_layer_forward(A_prev, W, b, activation=self.activations[i - 1].forward)
+            # print("z_"+str(i) + " " + str(A))
+            cache.append(tmp)
         return A, cache
 
     def _backward_prop(self, AL, Y, cache):
         # store for future
         gradients = {}
 
-        L = len(self.layer_dimensions)
+        L = len(cache)
 
         # calculate grad for cost function
         dAL = self.cost_function.cost_grad(AL, Y)
 
-        out = self._dense_layer_backward(dAL, cache[L-1], self.activations[L].backwards)
-        gradients["dW" + str(L)],  gradients["db" + str(L)], gradients["dA" + str(L)] = out
+        # print(self.activations[L-1])
+        out = self._dense_layer_backward(dAL, cache[L - 1], self.activations[L - 1].backward)
+        gradients["dW" + str(L)], gradients["db" + str(L)], gradients["dA" + str(L)] = out
 
         for l in reversed(range(L - 1)):
-            out = self._dense_layer_backward(gradients["dA" + str(l+2)], cache[l], self.activations[l].backwards)
-            gradients["dW" + str(l)],  gradients["db" + str(l)], gradients["dA" + str(l)] = out
+            out = self._dense_layer_backward(gradients["dA" + str(l + 2)], cache[l], self.activations[l].backward)
+            gradients["dW" + str(l)], gradients["db" + str(l)], gradients["dA" + str(l)] = out
 
         return gradients
+
+    def _update_params(self, gradients: dict, learning_rate: float):
+        """
+        Update the parameters of the model
+
+        :param gradients: gradients from back-propagation
+        :param learning_rate: step size of the gradient update
+        """
+        L = len(self.activations)
+
+        for l in range(L):
+            self.params["W_" + str(l + 1)] = self.params["W_" + str(l + 1)] - learning_rate * gradients[
+                "dW" + str(l + 1)]
+            self.params["b_" + str(l + 1)] = self.params["b_" + str(l + 1)] - learning_rate * gradients[
+                "db" + str(l + 1)]
 
     @staticmethod
     def _dense_layer_forward(X, W, bias, activation):
@@ -123,7 +140,7 @@ class NeuralNetwork:
         :return: The activation vector, as well as a tuple of values
         """
         Z = np.dot(W, X) + bias
-        return activation(Z)[0], (W, Z, bias)
+        return activation(Z)[0], (X, W, Z, bias)
 
     @staticmethod
     def _dense_layer_backward(g, old_values, activation_backwards):
@@ -138,5 +155,22 @@ class NeuralNetwork:
         g = activation_backwards(g, Z)
         dW = np.dot(g, X.T)  # / m
         dB = np.mean(g)
-        g *= W
+        g = np.dot(W.T, g)
         return dW, dB, g
+
+
+if __name__ == '__main__':
+    np.random.seed(0)
+    network = NeuralNetwork([2, 1], [activation_functions.Sigmoid], True)
+    x = np.array([[0.01, 0.01], [0.01, 0.99], [0.99, 0.01], [0.99, 0.99]]).T
+    y = np.array([[0.01], [0.01], [0.01], [0.99]]).T
+
+    print(network.predict(x))
+
+    print(x.shape)
+    print(x)
+    print(y.shape)
+
+    network.fit(x, y, learning_rate=0.1, epochs=100000)
+
+    print(network.predict(x))

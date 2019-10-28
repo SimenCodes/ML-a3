@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class CostFunction:
 
     @staticmethod
@@ -8,7 +11,8 @@ class CostFunction:
         :param Y_expected:
         :return: The Mean Squared Error
         """
-        return 0.5 * ((Y_expected - Y_pred) ** 2)
+        m = Y_expected.shape[1]
+        return (1/m) * np.sum(0.5 * ((Y_expected - Y_pred) ** 2))
 
     @staticmethod
     def cost_grad(Y_pred, Y_expected):
