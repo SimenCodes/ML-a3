@@ -1,7 +1,7 @@
 import numpy as np
 import cost
 import activation_functions
-
+import matplotlib.pylab as plt
 
 class NeuralNetwork:
 
@@ -67,6 +67,8 @@ class NeuralNetwork:
             # Update parameters
             self._update_params(gradients, learning_rate)
 
+            # save cost for history
+            self.cost.append(_cost)
             # TODO print cost
 
     def predict(self, X):
@@ -109,7 +111,7 @@ class NeuralNetwork:
 
         for l in reversed(range(L - 1)):
             out = self._dense_layer_backward(gradients["dA" + str(l + 2)], cache[l], self.activations[l].backward)
-            gradients["dW" + str(l)], gradients["db" + str(l)], gradients["dA" + str(l)] = out
+            gradients["dW" + str(l+1)], gradients["db" + str(l+1)], gradients["dA" + str(l+1)] = out
 
         return gradients
 
@@ -161,9 +163,9 @@ class NeuralNetwork:
 
 if __name__ == '__main__':
     np.random.seed(0)
-    network = NeuralNetwork([2, 1], [activation_functions.Sigmoid], True)
+    network = NeuralNetwork([2,4, 1], [activation_functions.ReLU,activation_functions.Sigmoid], True)
     x = np.array([[0.01, 0.01], [0.01, 0.99], [0.99, 0.01], [0.99, 0.99]]).T
-    y = np.array([[0.01], [0.01], [0.01], [0.99]]).T
+    y = np.array([[0.01], [0.99], [0.99], [0.01]]).T
 
     print(network.predict(x))
 
@@ -171,6 +173,8 @@ if __name__ == '__main__':
     print(x)
     print(y.shape)
 
-    network.fit(x, y, learning_rate=0.1, epochs=100000)
+    network.fit(x, y, learning_rate=0.1, epochs=100)
 
     print(network.predict(x))
+    plt.plot(network.cost)
+    plt.show()
