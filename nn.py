@@ -2,6 +2,7 @@ import numpy as np
 import cost
 import activation_functions
 import matplotlib.pylab as plt
+from layer import dense_layer_forward, dense_layer_backward
 
 
 class NeuralNetwork:
@@ -102,7 +103,7 @@ class NeuralNetwork:
             A_prev = A
             W = self.params['W_' + str(i)]
             b = self.params['b_' + str(i)]
-            A, tmp = self._dense_layer_forward(A_prev, W, b, activation=self.activations[i - 1].forward)
+            A, tmp = dense_layer_forward(A_prev, W, b, activation=self.activations[i - 1].forward)
             # print("z_"+str(i) + " " + str(A))
             cache.append(tmp)
         return A, cache
@@ -117,11 +118,11 @@ class NeuralNetwork:
         dAL = self.cost_function.cost_grad(AL, Y)
 
         # print(self.activations[L-1])
-        out = self._dense_layer_backward(dAL, cache[L - 1], self.activations[L - 1].backward)
+        out = dense_layer_backward(dAL, cache[L - 1], self.activations[L - 1].backward)
         gradients["dW" + str(L)], gradients["db" + str(L)], gradients["dA" + str(L)] = out
 
         for l in reversed(range(L - 1)):
-            out = self._dense_layer_backward(gradients["dA" + str(l + 2)], cache[l], self.activations[l].backward)
+            out = dense_layer_backward(gradients["dA" + str(l + 2)], cache[l], self.activations[l].backward)
             gradients["dW" + str(l + 1)], gradients["db" + str(l + 1)], gradients["dA" + str(l + 1)] = out
 
         return gradients
@@ -140,36 +141,6 @@ class NeuralNetwork:
                 "dW" + str(l + 1)]
             self.params["b_" + str(l + 1)] = self.params["b_" + str(l + 1)] - learning_rate * gradients[
                 "db" + str(l + 1)]
-
-    @staticmethod
-    def _dense_layer_forward(X, W, bias, activation):
-        """
-        Perform forward pass through a simple dense layer
-
-        :param X: Inputs to the layer
-        :param W: Weights for this layer
-        :param bias: Bias node for this layer
-        :param activation: The activation function to use
-        :return: The activation vector, as well as a tuple of values
-        """
-        Z = np.dot(W, X) + bias
-        return activation(Z)[0], (X, W, Z, bias)
-
-    @staticmethod
-    def _dense_layer_backward(g, old_values, activation_backwards):
-        """
-        Compute gradients for this layer
-        :param g: Gradients propagated from the next layer
-        :param old_values: the X, W, Z, and bias nodes
-        :param activation_backwards: the backwards implementation of the activation function
-        :return: weight and bias changes, and the gradients to propagate to the previous layer
-        """
-        X, W, Z, bias = old_values
-        g = activation_backwards(g, Z)
-        dW = np.dot(g, X.T)  # / m
-        dB = np.mean(g)
-        g = np.dot(W.T, g)
-        return dW, dB, g
 
 
 if __name__ == '__main__':
