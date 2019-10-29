@@ -145,18 +145,14 @@ class NeuralNetwork:
 
 if __name__ == '__main__':
     np.random.seed(0)
-    network = NeuralNetwork([2,4, 1], [activation_functions.ReLU,activation_functions.Sigmoid], True)
-    x = np.array([[0.01, 0.01], [0.01, 0.99], [0.99, 0.01], [0.99, 0.99]]).T
-    y = np.array([[0.01], [0.99], [0.99], [0.01]]).T
+    network = NeuralNetwork([2, 4, 1], [activation_functions.Swich, activation_functions.Sigmoid], True)
+    x = np.array([[0, 0], [0, 1], [1, 0], [1, 1]]).T
+    y = np.array([[0], [1], [1], [0]]).T
+
+    network.fit(x, y, learning_rate=0.2, epochs=2500, verbose=100)
 
     print(network.predict(x))
-
-    print(x.shape)
-    print(x)
-    print(y.shape)
-
-    network.fit(x, y, learning_rate=0.1, epochs=100)
-
-    print(network.predict(x))
-    plt.plot(network.cost)
+    plt.plot(network.cost, label='loss')
+    plt.plot(network.acc, label='acc')
+    plt.legend()
     plt.show()
