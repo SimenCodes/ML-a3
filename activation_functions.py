@@ -67,6 +67,8 @@ class ReLU(ActivationFunction):
         dZ = np.array(dA, copy=True)
 
         dZ[Z <= 0] = 0
+
+        assert (dZ.shape == Z.shape)
         return dZ
 
 
