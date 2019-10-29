@@ -1,7 +1,6 @@
 import numpy as np
 import cost
 import activation_functions
-import matplotlib.pylab as plt
 from layer import dense_layer_forward, dense_layer_backward
 
 
@@ -93,7 +92,7 @@ class NeuralNetwork:
 
         # If pred > 0.5 Y_hat = 1 else 0
         Y_hat = np.where(A >= 0.5, 1, 0)
-        acc = (1 / y.shape[1]) * np.sum(np.where(Y_hat == Y, 1, 0))
+        acc = (1 / Y.shape[1]) * np.sum(np.where(Y_hat == Y, 1, 0))
         return acc
 
     def _forward_prop(self, X):
@@ -141,22 +140,3 @@ class NeuralNetwork:
                 "dW" + str(l + 1)]
             self.params["b_" + str(l + 1)] = self.params["b_" + str(l + 1)] - learning_rate * gradients[
                 "db" + str(l + 1)]
-
-
-if __name__ == '__main__':
-    np.random.seed(0)
-    network = NeuralNetwork([2,4, 1], [activation_functions.ReLU,activation_functions.Sigmoid], True)
-    x = np.array([[0.01, 0.01], [0.01, 0.99], [0.99, 0.01], [0.99, 0.99]]).T
-    y = np.array([[0.01], [0.99], [0.99], [0.01]]).T
-
-    print(network.predict(x))
-
-    print(x.shape)
-    print(x)
-    print(y.shape)
-
-    network.fit(x, y, learning_rate=0.1, epochs=100)
-
-    print(network.predict(x))
-    plt.plot(network.cost)
-    plt.show()
