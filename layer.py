@@ -45,5 +45,5 @@ def dense_layer_backward(g, old_values, activation_backwards):
     g = activation_backwards(g, Z)
     dW = np.dot(g, X.T) # / m
     dB = np.mean(g)
-    g *= W
+    g = np.dot(W.T, g)
     return dW, dB, g
