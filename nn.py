@@ -4,6 +4,7 @@ import activation_functions
 import matplotlib.pylab as plt
 from layer import dense_layer_forward, dense_layer_backward
 
+
 class NeuralNetwork:
 
     def __init__(self, layer_dimensions: [int], activations: [activation_functions.ActivationFunction],
@@ -23,6 +24,7 @@ class NeuralNetwork:
 
         self.params = self.initialize()
         self.cost = []
+        self.acc = []
 
     def initialize(self):
         """
@@ -61,6 +63,7 @@ class NeuralNetwork:
 
             # compute cost
             _cost = self.cost_function.cost(A, Y)
+            _acc = self.evaluate(X, Y)
 
             # backwards propagate gradient and update weights
             gradients = self._backward_prop(A, Y, cache)
@@ -70,7 +73,10 @@ class NeuralNetwork:
 
             # save cost for history
             self.cost.append(_cost)
-            # TODO print cost
+            self.acc.append(_acc)
+
+            if i % verbose == 0:
+                print("Epoch: {},  Loss:{}, Acc:{}".format(i, _cost, _acc))
 
     def predict(self, X):
         """
@@ -83,7 +89,12 @@ class NeuralNetwork:
         return A
 
     def evaluate(self, X, Y):
-        raise NotImplementedError
+        A = self.predict(X)
+
+        # If pred > 0.5 Y_hat = 1 else 0
+        Y_hat = np.where(A >= 0.5, 1, 0)
+        acc = (1 / y.shape[1]) * np.sum(np.where(Y_hat == Y, 1, 0))
+        return acc
 
     def _forward_prop(self, X):
         cache = []
@@ -112,7 +123,7 @@ class NeuralNetwork:
 
         for l in reversed(range(L - 1)):
             out = dense_layer_backward(gradients["dA" + str(l + 2)], cache[l], self.activations[l].backward)
-            gradients["dW" + str(l+1)], gradients["db" + str(l+1)], gradients["dA" + str(l+1)] = out
+            gradients["dW" + str(l + 1)], gradients["db" + str(l + 1)], gradients["dA" + str(l + 1)] = out
 
         return gradients
 
