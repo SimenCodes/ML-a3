@@ -94,10 +94,10 @@ class NeuralNetwork:
                     print("Epoch: {},  Loss:{}, Acc:{}".format(i, _cost, _acc))
 
         if x_val is not None and y_val is not None:
-            print("Epoch: {},  Loss:{}, Acc:{}, validation_loss:{}, validation_acc:{}".format(i, _cost, _acc, val_cost,
+            print("Epoch: {},  Loss:{}, Acc:{}, validation_loss:{}, validation_acc:{}".format(epochs, _cost, _acc, val_cost,
                                                                                               val_acc))
         else:
-            print("Epoch: {},  Loss:{}, Acc:{}".format(i, _cost, _acc))
+            print("Epoch: {},  Loss:{}, Acc:{}".format(epochs, _cost, _acc))
 
     def predict(self, X):
         """
