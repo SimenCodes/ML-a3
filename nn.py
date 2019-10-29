@@ -138,5 +138,6 @@ class NeuralNetwork:
         for l in range(L):
             self.params["W_" + str(l + 1)] = self.params["W_" + str(l + 1)] - learning_rate * gradients[
                 "dW" + str(l + 1)]
+            # TODO: Er det en bug her?
             self.params["b_" + str(l + 1)] = self.params["b_" + str(l + 1)] - learning_rate * gradients[
                 "db" + str(l + 1)]
