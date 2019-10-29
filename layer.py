@@ -42,8 +42,9 @@ def dense_layer_backward(g, old_values, activation_backwards):
     :return: weight and bias changes, and the gradients to propagate to the previous layer
     """
     X, W, Z, bias = old_values
+    m = X.shape[1]
     g = activation_backwards(g, Z)
-    dW = np.dot(g, X.T) # / m
-    dB = np.mean(g, axis=1)
+    dW = (1 / m) * np.dot(g, X.T)
+    dB = np.mean(g, axis=1).reshape((g.shape[0], 1))
     g = np.dot(W.T, g)
     return dW, dB, g

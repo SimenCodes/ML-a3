@@ -24,6 +24,8 @@ class NeuralNetwork:
         self.params = self.initialize()
         self.cost = []
         self.acc = []
+        self.val_cost = []
+        self.val_acc = []
 
     def initialize(self):
         """
@@ -42,8 +44,9 @@ class NeuralNetwork:
                 params['W_' + str(i)] = np.random.rand(self.layer_dimensions[i], self.layer_dimensions[i - 1]) - 0.5
         return params
 
-    def fit(self, X, Y, learning_rate=0.1, epochs=500, verbose=1, seed: int = None):
+    def fit(self, X, Y, x_val=None, y_val=None, learning_rate=0.1, epochs=500, verbose=1, seed: int = None):
         """
+        Fit the neural network to a design matrix with response
 
         :param X: ndarray, the design matrix
         :param Y: ndarray, response for the design matrix
@@ -62,7 +65,6 @@ class NeuralNetwork:
 
             # compute cost
             _cost = self.cost_function.cost(A, Y)
-            _acc = self.evaluate(X, Y)
 
             # backwards propagate gradient and update weights
             gradients = self._backward_prop(A, Y, cache)
@@ -72,10 +74,30 @@ class NeuralNetwork:
 
             # save cost for history
             self.cost.append(_cost)
+
+            _acc = self.evaluate(X, Y)
             self.acc.append(_acc)
 
+            if x_val is not None and y_val is not None:
+                A, _ = self._forward_prop(x_val)
+                val_cost = self.cost_function.cost(A, y_val)
+                val_acc = self.evaluate(x_val, y_val)
+                self.val_cost.append(val_cost)
+                self.val_acc.append(val_acc)
+
             if i % verbose == 0:
-                print("Epoch: {},  Loss:{}, Acc:{}".format(i, _cost, _acc))
+                if x_val is not None and y_val is not None:
+                    print("Epoch: {},  Loss:{}, Acc:{}, validation_loss:{}, validation_acc:{}".format(i, _cost, _acc,
+                                                                                                      val_cost,
+                                                                                                      val_acc))
+                else:
+                    print("Epoch: {},  Loss:{}, Acc:{}".format(i, _cost, _acc))
+
+        if x_val is not None and y_val is not None:
+            print("Epoch: {},  Loss:{}, Acc:{}, validation_loss:{}, validation_acc:{}".format(i, _cost, _acc, val_cost,
+                                                                                              val_acc))
+        else:
+            print("Epoch: {},  Loss:{}, Acc:{}".format(i, _cost, _acc))
 
     def predict(self, X):
         """
@@ -88,11 +110,13 @@ class NeuralNetwork:
         return A
 
     def evaluate(self, X, Y):
+        # TODO: suport arbetrary out nodes
         A = self.predict(X)
 
         # If pred > 0.5 Y_hat = 1 else 0
         Y_hat = np.where(A >= 0.5, 1, 0)
-        acc = (1 / Y.shape[1]) * np.sum(np.where(Y_hat == Y, 1, 0))
+        tmp = np.where(Y_hat == Y, 1, 0)
+        acc = (1 / (Y.shape[1] * Y.shape[0])) * np.sum(np.where(Y_hat == Y, 1, 0))
         return acc
 
     def _forward_prop(self, X):
@@ -103,7 +127,6 @@ class NeuralNetwork:
             W = self.params['W_' + str(i)]
             b = self.params['b_' + str(i)]
             A, tmp = dense_layer_forward(A_prev, W, b, activation=self.activations[i - 1].forward)
-            # print("z_"+str(i) + " " + str(A))
             cache.append(tmp)
         return A, cache
 
@@ -138,6 +161,6 @@ class NeuralNetwork:
         for l in range(L):
             self.params["W_" + str(l + 1)] = self.params["W_" + str(l + 1)] - learning_rate * gradients[
                 "dW" + str(l + 1)]
-            # TODO: Er det en bug her?
+
             self.params["b_" + str(l + 1)] = self.params["b_" + str(l + 1)] - learning_rate * gradients[
                 "db" + str(l + 1)]
