@@ -22,15 +22,18 @@ X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.
 print(y_train)
 
 network = NeuralNetwork(
-    layer_dimensions=[X_train.shape[1], 64, 32, 16, y_train.shape[1]],
-    activations=[Swich, Swich, Swich, Sigmoid],
-    keep_prob=[1.0, 0.9, 0.8, 0.7, 1.0],
+    layer_dimensions=[X_train.shape[1], 32, 16, y_train.shape[1]],
+    activations=[Sigmoid, Sigmoid, Sigmoid],
+    keep_prob=[1.0, 1.0, 1.0, 1.0],
+    # keep_prob=[1.0, 0.8, 0.7, 1.0],
     he_initialization=True
 )
 
 print(X.shape, y.shape)
 
-network.fit(X_train.T, y_train.T, X_val.T, y_val.T, learning_rate=0.005, epochs=2500, verbose=100)
+network.draw(filename='mnist', format='png')
+
+network.fit(X_train.T, y_train.T, X_val.T, y_val.T, learning_rate=0.1, epochs=10000, verbose=100)
 
 # print(network.predict(X_test.T))
 plt.plot(network.cost, label='loss')

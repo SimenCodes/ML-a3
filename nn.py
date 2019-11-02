@@ -122,7 +122,9 @@ class NeuralNetwork:
         A = self.predict(X)
 
         # If pred > 0.5 Y_hat = 1 else 0
-        Y_hat = np.where(A >= 0.5, 1, 0)
+        max_index = np.argmax(A, axis=0).reshape(A.shape[1])
+        Y_hat = np.zeros(A.shape)
+        Y_hat[max_index, np.arange(A.shape[1])] = 1
         acc = (1 / (Y.shape[1] * Y.shape[0])) * np.sum(np.where(Y_hat == Y, 1, 0))
         return acc
 
