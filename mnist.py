@@ -47,6 +47,7 @@ plt.ylabel("true")
 plt.xticks(list(range(10)))
 plt.yticks(list(range(10)))
 plt.ylim([-0.5, 9.5])
+plt.save('mnist-cm.png')
 plt.show()
 
 # print(network.predict(X_test.T))
