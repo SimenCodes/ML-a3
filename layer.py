@@ -46,10 +46,10 @@ def dense_layer_forward_with_dropout(X, W, bias, activation, keep_prob):
     """
     Z = np.dot(W, X) + bias
     A = activation(Z)[0]
-    dropout_mask_initial = np.random.uniform(size=(A.shape[0], A.shape[1]))
-    dropout_mask = dropout_mask_initial < keep_prob
-    A_DROP = (A * dropout_mask) / keep_prob
-    return A_DROP, (X, W, Z, bias, dropout_mask)
+    dropout_mask = np.random.uniform(size=(A.shape[0], A.shape[1]))
+    dropout_mask = dropout_mask < keep_prob
+    A = (A * dropout_mask) / keep_prob
+    return A, (X, W, Z, bias, dropout_mask)
 
 
 def dense_layer_backward(g, old_values, activation_backwards):
