@@ -112,7 +112,7 @@ class NeuralNetwork:
         :param X: ndarray, design matrix to predict
         :return: model output for the provided design matrix
         """
-        A, _ = self._forward_prop(X)
+        A, _ = self._forward_prop(X, training=False)
         return A
 
     def evaluate(self, X, Y):
@@ -124,15 +124,18 @@ class NeuralNetwork:
         acc = (1 / (Y.shape[1] * Y.shape[0])) * np.sum(np.where(Y_hat == Y, 1, 0))
         return acc
 
-    def _forward_prop(self, X):
+    def _forward_prop(self, X, training=True):
         cache = []
         A = X
         for i in range(1, len(self.layer_dimensions)):
             A_prev = A
             W = self.params['W_' + str(i)]
             b = self.params['b_' + str(i)]
-            A, tmp = dense_layer_forward_with_dropout(A_prev, W, b, activation=self.activations[i - 1].forward,
-                                                      keep_prob=self.keep_prob[i])
+            if training:
+                A, tmp = dense_layer_forward_with_dropout(A_prev, W, b, activation=self.activations[i - 1].forward,
+                                                          keep_prob=self.keep_prob[i])
+            else:
+                A, tmp = dense_layer_forward(A_prev, W, b, activation=self.activations[i-i].forward)
             cache.append(tmp)
         return A, cache
 
