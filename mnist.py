@@ -25,7 +25,7 @@ print(y_train)
 network = NeuralNetwork(
     layer_dimensions=[X_train.shape[1], 32, 16, y_train.shape[1]],
     activations=[Sigmoid, Sigmoid, Sigmoid],
-    keep_prob=[1.0, 1.0, 1.0, 1.0],
+    keep_prob=[1.0, 0.8, 0.9, 1.0],
     # keep_prob=[1.0, 0.8, 0.7, 1.0],
     he_initialization=True
 )
@@ -34,10 +34,12 @@ print(X.shape, y.shape)
 
 network.draw(filename='mnist', format='png')
 
-network.fit(X_train.T, y_train.T, X_val.T, y_val.T, learning_rate=0.1, epochs=10000, verbose=100)
+network.fit(X_train.T, y_train.T, X_val.T, y_val.T, learning_rate=0.1, epochs=25000, verbose=100)
 
 y_val_pred = np.argmax(network.predict(X_val.T), axis=0)
 cm = confusion_matrix(np.argmax(y_val.T, axis=0), y_val_pred, labels=list(range(10)))
+
+print(cm)
 
 plt.imshow(cm)
 plt.xlabel("predicted")
@@ -52,6 +54,20 @@ plt.plot(network.cost, label='loss')
 plt.plot(network.val_cost, label='val_loss')
 plt.plot(network.acc, label='acc')
 plt.plot(network.val_acc, label='val_acc')
-
 plt.legend()
 plt.show()
+
+pred = np.argmax(network.predict(X_test.T), axis=0)
+cm = confusion_matrix(np.argmax(y_test.T, axis=0), pred, labels=list(range(10)))
+
+print(cm)
+
+plt.imshow(cm)
+plt.xlabel("predicted")
+plt.ylabel("true")
+plt.xticks(list(range(10)))
+plt.yticks(list(range(10)))
+plt.ylim([-0.5, 9.5])
+plt.show()
+
+print(network.evaluate(X_test.T, y_test.T))

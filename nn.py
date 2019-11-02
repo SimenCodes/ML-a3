@@ -87,7 +87,7 @@ class NeuralNetwork:
             self.acc.append(_acc)
 
             if x_val is not None and y_val is not None:
-                A, _ = self._forward_prop(x_val)
+                A, _ = self._forward_prop(x_val, training=False)
                 val_cost = self.cost_function.cost(A, y_val)
                 val_acc = self.evaluate(x_val, y_val)
                 self.val_cost.append(val_cost)
