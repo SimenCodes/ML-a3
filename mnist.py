@@ -1,10 +1,11 @@
 import matplotlib.pylab as plt
 import numpy as np
 from sklearn.datasets import load_digits
+from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 
-from activation_functions import Sigmoid, Swich, ReLU
+from activation_functions import Sigmoid
 from nn import NeuralNetwork
 
 np.random.seed(0)
@@ -34,6 +35,17 @@ print(X.shape, y.shape)
 network.draw(filename='mnist', format='png')
 
 network.fit(X_train.T, y_train.T, X_val.T, y_val.T, learning_rate=0.1, epochs=10000, verbose=100)
+
+y_val_pred = np.argmax(network.predict(X_val.T), axis=0)
+cm = confusion_matrix(np.argmax(y_val.T, axis=0), y_val_pred, labels=list(range(10)))
+
+plt.imshow(cm)
+plt.xlabel("predicted")
+plt.ylabel("true")
+plt.xticks(list(range(10)))
+plt.yticks(list(range(10)))
+plt.ylim([-0.5, 9.5])
+plt.show()
 
 # print(network.predict(X_test.T))
 plt.plot(network.cost, label='loss')
