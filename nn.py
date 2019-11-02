@@ -1,13 +1,13 @@
 import numpy as np
 import cost
 import activation_functions
-from layer import dense_layer_forward, dense_layer_backward
+from layer import dense_layer_forward_with_dropout, dense_layer_backward_with_dropout
 
 
 class NeuralNetwork:
 
     def __init__(self, layer_dimensions: [int], activations: [activation_functions.ActivationFunction],
-                 he_initialization: bool, cost_function: cost.CostFunction = cost.CostFunction):
+                 keep_prob: [float], he_initialization: bool, cost_function: cost.CostFunction = cost.CostFunction):
         """
         Initialize the neural network model. TODO more documentation about the model
 
@@ -16,10 +16,15 @@ class NeuralNetwork:
         :param he_initialization:  Whether to use He initialization, ref
         https://towardsdatascience.com/random-initialization-for-neural-networks-a-thing-of-the-past-bfcdd806bf9e
         """
+        assert len(keep_prob) == len(layer_dimensions)
+        assert keep_prob[0] == 1.0
+        assert keep_prob[-1] == 1.0
+
         self.layer_dimensions = layer_dimensions
         self.activations = activations
         self.he_initialization = he_initialization
         self.cost_function = cost_function
+        self.keep_prob = keep_prob
 
         self.params = self.initialize()
         self.cost = []
@@ -94,8 +99,8 @@ class NeuralNetwork:
                     print("Epoch: {},  Loss:{}, Acc:{}".format(i, _cost, _acc))
 
         if x_val is not None and y_val is not None:
-            print("Epoch: {},  Loss:{}, Acc:{}, validation_loss:{}, validation_acc:{}".format(epochs, _cost, _acc, val_cost,
-                                                                                              val_acc))
+            print("Epoch: {},  Loss:{}, Acc:{}, validation_loss:{}, validation_acc:{}".format(epochs, _cost, _acc,
+                                                                                              val_cost, val_acc))
         else:
             print("Epoch: {},  Loss:{}, Acc:{}".format(epochs, _cost, _acc))
 
@@ -115,7 +120,6 @@ class NeuralNetwork:
 
         # If pred > 0.5 Y_hat = 1 else 0
         Y_hat = np.where(A >= 0.5, 1, 0)
-        tmp = np.where(Y_hat == Y, 1, 0)
         acc = (1 / (Y.shape[1] * Y.shape[0])) * np.sum(np.where(Y_hat == Y, 1, 0))
         return acc
 
@@ -126,7 +130,8 @@ class NeuralNetwork:
             A_prev = A
             W = self.params['W_' + str(i)]
             b = self.params['b_' + str(i)]
-            A, tmp = dense_layer_forward(A_prev, W, b, activation=self.activations[i - 1].forward)
+            A, tmp = dense_layer_forward_with_dropout(A_prev, W, b, activation=self.activations[i - 1].forward,
+                                                      keep_prob=self.keep_prob[i])
             cache.append(tmp)
         return A, cache
 
@@ -140,11 +145,12 @@ class NeuralNetwork:
         dAL = self.cost_function.cost_grad(AL, Y)
 
         # print(self.activations[L-1])
-        out = dense_layer_backward(dAL, cache[L - 1], self.activations[L - 1].backward)
+        out = dense_layer_backward_with_dropout(dAL, cache[L - 1], self.activations[L - 1].backward, keep_prob=self.keep_prob[-1])
         gradients["dW" + str(L)], gradients["db" + str(L)], gradients["dA" + str(L)] = out
 
         for l in reversed(range(L - 1)):
-            out = dense_layer_backward(gradients["dA" + str(l + 2)], cache[l], self.activations[l].backward)
+            out = dense_layer_backward_with_dropout(gradients["dA" + str(l + 2)], cache[l],
+                                                    self.activations[l].backward, keep_prob=self.keep_prob[l+1])
             gradients["dW" + str(l + 1)], gradients["db" + str(l + 1)], gradients["dA" + str(l + 1)] = out
 
         return gradients

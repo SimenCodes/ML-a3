@@ -23,7 +23,8 @@ print(y_train)
 
 network = NeuralNetwork(
     layer_dimensions=[X_train.shape[1], 64, 32, 16, y_train.shape[1]],
-    activations=[ReLU, ReLU, ReLU, Sigmoid],
+    activations=[Swich, Swich, Swich, Sigmoid],
+    keep_prob=[1.0, 0.9, 0.8, 0.7, 1.0],
     he_initialization=True
 )
 
@@ -31,7 +32,7 @@ print(X.shape, y.shape)
 
 network.fit(X_train.T, y_train.T, X_val.T, y_val.T, learning_rate=0.005, epochs=2500, verbose=100)
 
-#print(network.predict(X_test.T))
+# print(network.predict(X_test.T))
 plt.plot(network.cost, label='loss')
 plt.plot(network.val_cost, label='val_loss')
 plt.plot(network.acc, label='acc')

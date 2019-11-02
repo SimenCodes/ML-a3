@@ -33,9 +33,29 @@ def dense_layer_forward(X, W, bias, activation):
     return activation(Z)[0], (X, W, Z, bias)
 
 
+def dense_layer_forward_with_dropout(X, W, bias, activation, keep_prob):
+    """
+    Preform forward pass through a dense layer with dropout. This will drop nodes with a (1-keep_prob) probability
+
+    :param X: Inputs to the layer
+    :param W: Weights for this layer
+    :param bias: Bias node for this layer
+    :param activation: The activation function to use
+    :param keep_prob: Probability of keeping a node
+    :return: The activation vector, as well as a tuple of values
+    """
+    Z = np.dot(W, X) + bias
+    A = activation(Z)[0]
+    dropout_mask = np.random.randn(A.shape[0], A.shape[1])
+    dropout_mask = dropout_mask < keep_prob
+    A = (A * dropout_mask) / keep_prob
+    return A, (X, W, Z, bias, dropout_mask)
+
+
 def dense_layer_backward(g, old_values, activation_backwards):
     """
     Compute gradients for this layer
+
     :param g: Gradients propagated from the next layer
     :param old_values: the X, W, Z, and bias nodes
     :param activation_backwards: the backwards implementation of the activation function
@@ -44,6 +64,27 @@ def dense_layer_backward(g, old_values, activation_backwards):
     X, W, Z, bias = old_values
     m = X.shape[1]
     g = activation_backwards(g, Z)
+    dW = (1 / m) * np.dot(g, X.T)
+    dB = np.mean(g, axis=1).reshape((g.shape[0], 1))
+    g = np.dot(W.T, g)
+    return dW, dB, g
+
+
+def dense_layer_backward_with_dropout(g, old_values, activation_backwards, keep_prob):
+    """
+    Compute gradient step for a layer with dropout.
+
+    :param g:
+    :param old_values:
+    :param activation_backwards:
+    :param dropout_mask:
+    :param keep_prob:
+    :return:
+    """
+    X, W, Z, bias, dropout_mask = old_values
+    m = X.shape[1]
+    g = activation_backwards(g, Z)
+    g = (g * dropout_mask) / keep_prob
     dW = (1 / m) * np.dot(g, X.T)
     dB = np.mean(g, axis=1).reshape((g.shape[0], 1))
     g = np.dot(W.T, g)
