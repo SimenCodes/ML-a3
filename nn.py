@@ -1,7 +1,8 @@
 import numpy as np
 import cost
 import activation_functions
-from layer import dense_layer_forward_with_dropout, dense_layer_backward_with_dropout
+from layer import dense_layer_forward_with_dropout, dense_layer_backward_with_dropout, dense_layer_backward, \
+    dense_layer_forward
 
 
 class NeuralNetwork:
@@ -145,12 +146,13 @@ class NeuralNetwork:
         dAL = self.cost_function.cost_grad(AL, Y)
 
         # print(self.activations[L-1])
-        out = dense_layer_backward_with_dropout(dAL, cache[L - 1], self.activations[L - 1].backward, keep_prob=self.keep_prob[-1])
+        out = dense_layer_backward_with_dropout(dAL, cache[L - 1], self.activations[L - 1].backward,
+                                                keep_prob=self.keep_prob[-1])
         gradients["dW" + str(L)], gradients["db" + str(L)], gradients["dA" + str(L)] = out
 
         for l in reversed(range(L - 1)):
             out = dense_layer_backward_with_dropout(gradients["dA" + str(l + 2)], cache[l],
-                                                    self.activations[l].backward, keep_prob=self.keep_prob[l+1])
+                                                    self.activations[l].backward, keep_prob=self.keep_prob[l + 1])
             gradients["dW" + str(l + 1)], gradients["db" + str(l + 1)], gradients["dA" + str(l + 1)] = out
 
         return gradients
