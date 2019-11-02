@@ -1,6 +1,8 @@
 import numpy as np
-import cost
+from graphviz import Digraph
+
 import activation_functions
+import cost
 from layer import dense_layer_forward_with_dropout, dense_layer_backward_with_dropout, dense_layer_backward, \
     dense_layer_forward
 
@@ -172,3 +174,24 @@ class NeuralNetwork:
 
             self.params["b_" + str(l + 1)] = self.params["b_" + str(l + 1)] - learning_rate * gradients[
                 "db" + str(l + 1)]
+
+    def __repr__(self):
+        return "NeuralNetwork(layer_dimensions=%s, activations=%s, he_initialization=%s, cost=%s" % (
+            self.layer_dimensions, self.activations, self.he_initialization, self.cost_function
+        )
+
+    def draw(self, **kwargs):
+        dot = Digraph(comment=self.__repr__())
+        for layer, size in zip(range(len(self.layer_dimensions)), self.layer_dimensions):
+            for node in range(size):
+                id = self.node_id(layer, node)
+                dot.node(id, id)
+                if layer > 0:
+                    prev_layer = range(self.layer_dimensions[layer - 1])
+                    for prev_node in prev_layer:
+                        dot.edge(self.node_id(layer - 1, prev_node), id)
+        print(dot.source)
+        return dot.render(**kwargs)
+
+    def node_id(self, layer, node):
+        return 'L%d-N%d' % (layer, node)
